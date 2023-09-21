@@ -12,7 +12,7 @@ add_custom_target(non-compiled-files SOURCES
     README.md
 )
 
-find_package(Qt6 6.4 REQUIRED COMPONENTS Core Quick)
+find_package(Qt6 6.4 REQUIRED COMPONENTS Quick)
 
 qt_standard_project_setup()
 
@@ -36,7 +36,6 @@ set_target_properties(${APP_TARGET} PROPERTIES
 
 target_link_libraries(${APP_TARGET}
     PRIVATE
-    Qt6::Core
     Qt6::Quick
 )
 
