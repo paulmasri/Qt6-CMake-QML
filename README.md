@@ -6,7 +6,7 @@ The app has two QML files, `Main.qml` and `Disc.qml`. When running correctly it 
 
 ## How to use
 
-This project needs Qt 6.5+.
+This project needs Qt 6.4+.
 
 Install and select the corresponding MSVC 64-bit kit (e.g. "Qt 6.5.2 MSVC2019 64bit")
 
