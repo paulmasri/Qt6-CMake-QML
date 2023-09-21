@@ -77,10 +77,17 @@ install(
     DESTINATION "${CMAKE_INSTALL_PREFIX}"
 )
 
-option(APP_PACKAGE_SIGN "Enable packaging, bundling and signing of the app" OFF)
+option(APP_PACKAGE_SIGN "Enable packaging and signing of the app" OFF)
+option(APP_BUNDLE "Enable bundling .appx package as .appxbundle (bundle gets signed instead of package)" OFF)
 
 if(APP_PACKAGE_SIGN)
-    message("Starting packaging, bundling and signing...")
+    if(APP_BUNDLE)
+        set(package_bundle_message "packaging, bundling, and signing (the bundle)")
+    else()
+        set(package_bundle_message "packaging and signing (the package)")
+    endif()
+    message("Starting ${package_bundle_message}...")
+
 
     if(NOT DEFINED PFX_SIGNATURE_KEY)
         message(FATAL_ERROR "PFX_SIGNATURE_KEY is not defined. Make sure to set it to the path of your PFX file.")
@@ -95,15 +102,21 @@ if(APP_PACKAGE_SIGN)
             "Make sure to point to the right certificate PFX file for signing.")
     endif()
 
-    # Execute makeappx and signtool
     set(makeappx_pack_x64_command "makeappx pack /d \"${CMAKE_INSTALL_PREFIX}\" /p \"${CMAKE_BINARY_DIR}/${APPX_PACKAGES_PREFIX}/${APPX_PACKAGE_NAME_X64}\"")
     set(makeappx_pack_x64_execute_process "execute_process(COMMAND ${makeappx_pack_x64_command})")
 
-    set(makeappx_bundle_command "makeappx bundle /d \"${CMAKE_BINARY_DIR}/${APPX_PACKAGES_PREFIX}\" /p \"${CMAKE_BINARY_DIR}/${APPX_BUNDLE_NAME}\"")
-    set(makeappx_bundle_execute_process "execute_process(COMMAND ${makeappx_bundle_command})")
+    if(APP_BUNDLE)
+        set(makeappx_bundle_command "makeappx bundle /d \"${CMAKE_BINARY_DIR}/${APPX_PACKAGES_PREFIX}\" /p \"${CMAKE_BINARY_DIR}/${APPX_BUNDLE_NAME}\"")
+        set(makeappx_bundle_execute_process "execute_process(COMMAND ${makeappx_bundle_command})")
 
-    set(signtool_command "signtool sign /n \"${APPX_PUBLISHER_ID}\" /v /fd SHA256 /f \"${CMAKE_SOURCE_DIR}/${PFX_SIGNATURE_KEY}\" /p \"${PFX_PASSWORD}\" \"${CMAKE_BINARY_DIR}/${APPX_BUNDLE_NAME}\"")
-    set(signtool_execute_process "execute_process(COMMAND ${signtool_command})")
+        set(signtool_command "signtool sign /n \"${APPX_PUBLISHER_ID}\" /v /fd SHA256 /f \"${CMAKE_SOURCE_DIR}/${PFX_SIGNATURE_KEY}\" /p \"${PFX_PASSWORD}\" \"${CMAKE_BINARY_DIR}/${APPX_BUNDLE_NAME}\"")
+        set(signtool_execute_process "execute_process(COMMAND ${signtool_command})")
+    else()
+        set(makeappx_bundle_execute_process "")
+
+        set(signtool_command "signtool sign /n \"${APPX_PUBLISHER_ID}\" /v /fd SHA256 /f \"${CMAKE_SOURCE_DIR}/${PFX_SIGNATURE_KEY}\" /p \"${PFX_PASSWORD}\" \"${CMAKE_BINARY_DIR}/${APPX_PACKAGES_PREFIX}/${APPX_PACKAGE_NAME_X64}\"")
+        set(signtool_execute_process "execute_process(COMMAND ${signtool_command})")
+    endif()
 
     install(CODE "
         file(REMOVE_RECURSE \"${CMAKE_BINARY_DIR}/${APPX_PACKAGES_PREFIX}\")
@@ -113,5 +126,5 @@ if(APP_PACKAGE_SIGN)
         ${signtool_execute_process}
         ")
 
-    message("Done packaging, bundling and signing")
+    message("Done ${package_bundle_message}")
 endif()

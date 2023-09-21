@@ -36,6 +36,7 @@ This will generate a local Certificate-Signing Authority (CA) called "Qt.Experim
 Configure the Release build as follows:
 - set CMake Cache Variables:
     - `APP_PACKAGE_SIGN` (bool): `ON`
+    - `APP_BUNDLE` (bool): `ON`
     - `PFX_SIGNATURE_KEY` (string): `LocalQtExperimentKey.pfx` (or your store's private certificate, which must be saved in the project source folder
     - `PFX_PASSWORD` (string): password for your private certificate key
     - `CMAKE_INSTALL_PREFIX` (string): `your-build-directory/install` (within Qt Creator, you can just paste `%{BuildConfig:BuildDirectory:NativeFilePath}/install`)
@@ -47,7 +48,7 @@ If, like me, you're using Qt Creator, you can do the above as follows:
 1. Go to the Build Settings (**Project** on the left menu)
 1. Edit the **Release** build configuration.
 1. Select **Initial Configuration** click **Re-configure with Initial Parameters**. This resets the parameters, runs CMake and sets things up for customising.
-1. Select **Current Configuration**, tick the `APP_PACKAGE_SIGN` row and add/edit the other keys. Then click **Run CMake**
+1. Select **Current Configuration**, tick the `APP_PACKAGE_SIGN` row, tick the `APP_BUNDLE` row and add/edit the other keys. Then click **Run CMake**
 1. Scroll down to **Build Steps** where you'll see the default CMake command. Click **Details**. Tick **install** as well as **all**.
 1. Build the project and you should see the additional steps happen in the **Compile Output** panel.
 
@@ -69,3 +70,8 @@ You can do a simple visual check of the app package. It will be in the build fol
 The app bundle will be in the build directory `Qt6-CMake-QML_x64.appxbundle`
 Double-click this to open the installer.
 Assuming you've correctly created the private certificate key and the signing step worked this should allow you to install the app.
+
+### Don't need a bundle?
+
+If you only need a single package rather than a bundle, set `APP_BUNDLE`: `OFF`.
+This will skip the bundle step and will sign the package instead.
