@@ -45,11 +45,19 @@ install(TARGETS ${APP_TARGET}
     RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
 )
 
-qt_generate_deploy_qml_app_script(
-    TARGET ${APP_TARGET}
-    OUTPUT_SCRIPT deploy_script
-)
+if(${Qt6_VERSION} VERSION_LESS "6.5")
+    qt_generate_deploy_qml_app_script(
+        TARGET ${APP_TARGET}
+        FILENAME_VARIABLE deploy_script
+    )
+else()
+    qt_generate_deploy_qml_app_script(
+        TARGET ${APP_TARGET}
+        OUTPUT_SCRIPT deploy_script
+    )
+endif()
 install(SCRIPT ${deploy_script})
+
 include(InstallRequiredSystemLibraries)
 
 set(APPX_PUBLISHER_ID "Qt.Experiment.Certificate")
