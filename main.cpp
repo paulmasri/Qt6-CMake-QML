@@ -21,7 +21,7 @@ void customMessageHandler(QtMsgType type, const QMessageLogContext &context, con
                                .arg(context.line)
                                .arg(context.function);
 
-    QString dirPath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) + "/Qt6-CMake-QML Log";
+    QString dirPath = QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation) + "/Qt6-CMake-QML";
     QDir dir(dirPath);
     if (!dir.exists()) {
         dir.mkpath(".");
