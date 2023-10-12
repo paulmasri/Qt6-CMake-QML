@@ -94,7 +94,7 @@ if(APP_PACKAGE_SIGN)
     else()
         set(package_bundle_message "packaging and signing (the package)")
     endif()
-    message("Starting ${package_bundle_message}...")
+    message(STATUS "Starting ${package_bundle_message}...")
 
 
     if(NOT DEFINED PFX_SIGNATURE_KEY)
@@ -105,7 +105,7 @@ if(APP_PACKAGE_SIGN)
         message(FATAL_ERROR "PFX_PASSWORD is not defined. Make sure to set it to the password of your PFX file.")
     endif()
 
-    if (NOT EXISTS "${CMAKE_SOURCE_DIR}/${PFX_SIGNATURE_KEY}")
+    if(NOT EXISTS "${CMAKE_SOURCE_DIR}/${PFX_SIGNATURE_KEY}")
         message(FATAL_ERROR
             "Make sure to point to the right certificate PFX file for signing.")
     endif()
@@ -134,5 +134,5 @@ if(APP_PACKAGE_SIGN)
         ${signtool_execute_process}
         ")
 
-    message("Done ${package_bundle_message}")
+    message(STATUS "Done ${package_bundle_message}")
 endif()
