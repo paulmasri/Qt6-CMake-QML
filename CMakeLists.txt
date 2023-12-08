@@ -26,7 +26,6 @@ qt_add_qml_module(${APP_TARGET}
     VERSION 1.0
     QML_FILES
         Main.qml
-        Disc.qml
 )
 
 set_target_properties(${APP_TARGET} PROPERTIES
