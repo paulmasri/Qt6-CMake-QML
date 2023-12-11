@@ -3,10 +3,25 @@ cmake_minimum_required(VERSION 3.24)
 set(APP_TARGET Qt6-CMake-QML)
 set(APP_NAME "QML Test App")
 
+option(APP_PACKAGE_SIGN "Enable packaging and signing of the app" OFF)
+option(APP_BUNDLE "Enable bundling .appx package as .appxbundle (bundle gets signed instead of package)" OFF)
+
 set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}/install")
 message(STATUS "CMAKE_INSTALL_PREFIX changed to ${CMAKE_INSTALL_PREFIX} for the duration of this configuration script")
 
 project(${APP_TARGET} VERSION 1.0.0 LANGUAGES CXX)
+
+if(APP_PACKAGE_SIGN)
+    if(APP_BUNDLE)
+        set(package_bundle_message "packaging, bundling, and signing (the bundle)")
+    else()
+        set(package_bundle_message "packaging and signing (the package)")
+    endif()
+
+    # Generate PDB files (for Release build where it can be used for symbolicating crash reports)
+#    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /Zi /Fd${APPX_PDB_SYMBOLS_DIR}/${APP_TARGET}.pdb")
+#    set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "${CMAKE_SHARED_LINKER_FLAGS_RELEASE} /DEBUG /OPT:REF /OPT:ICF")
+endif()
 
 # Other files: for inclusion (easy access in Qt Creator) but not for compiling
 add_custom_target(non-compiled-files SOURCES
@@ -93,17 +108,8 @@ if (APP_INSTALL)
 message(STATUS "Done prepare for install step.")
 endif()
 
-option(APP_PACKAGE_SIGN "Enable packaging and signing of the app" OFF)
-option(APP_BUNDLE "Enable bundling .appx package as .appxbundle (bundle gets signed instead of package)" OFF)
-
 if(APP_PACKAGE_SIGN)
-    if(APP_BUNDLE)
-        set(package_bundle_message "packaging, bundling, and signing (the bundle)")
-    else()
-        set(package_bundle_message "packaging and signing (the package)")
-    endif()
     message(STATUS "Starting ${package_bundle_message}...")
-
 
     if(NOT DEFINED PFX_SIGNATURE_KEY)
         message(FATAL_ERROR "PFX_SIGNATURE_KEY is not defined. Make sure to set it to the path of your PFX file.")
@@ -135,6 +141,8 @@ if(APP_PACKAGE_SIGN)
     endif()
 
     install(CODE "
+#        file(MAKE_DIRECTORY \"${APPX_PDB_SYMBOLS_DIR}\")
+#        file(RENAME \"${CMAKE_INSTALL_PREFIX}/${APP_TARGET}.pdb\" \"${APPX_PDB_SYMBOLS_DIR}/${APP_TARGET}.pdb\")
         file(REMOVE_RECURSE \"${CMAKE_BINARY_DIR}/${APPX_PACKAGES_PREFIX}\")
         file(REMOVE \"${CMAKE_BINARY_DIR}/${APPX_BUNDLE_NAME}\")
         ${makeappx_pack_x64_execute_process}
