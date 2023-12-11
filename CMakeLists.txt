@@ -3,6 +3,9 @@ cmake_minimum_required(VERSION 3.24)
 set(APP_TARGET Qt6-CMake-QML)
 set(APP_NAME "QML Test App")
 
+set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}/install")
+message(STATUS "CMAKE_INSTALL_PREFIX changed to ${CMAKE_INSTALL_PREFIX} for the duration of this configuration script")
+
 project(${APP_TARGET} VERSION 1.0.0 LANGUAGES CXX)
 
 # Other files: for inclusion (easy access in Qt Creator) but not for compiling
@@ -38,51 +41,57 @@ target_link_libraries(${APP_TARGET}
     Qt6::Quick
 )
 
-install(TARGETS ${APP_TARGET}
-    BUNDLE DESTINATION .
-    LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
-    RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
-)
+option(APP_INSTALL "Run install step following the build" OFF)
+if (APP_INSTALL)
+    message(STATUS "Starting prepare for install step...")
+    install(TARGETS ${APP_TARGET}
+        BUNDLE DESTINATION .
+        LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+        RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
+    )
 
-if(${Qt6_VERSION} VERSION_LESS "6.5")
-    qt_generate_deploy_qml_app_script(
-        TARGET ${APP_TARGET}
-        FILENAME_VARIABLE deploy_script
+    if(${Qt6_VERSION} VERSION_LESS "6.5")
+        qt_generate_deploy_qml_app_script(
+            TARGET ${APP_TARGET}
+            FILENAME_VARIABLE deploy_script
+        )
+    else()
+        qt_generate_deploy_qml_app_script(
+            TARGET ${APP_TARGET}
+            OUTPUT_SCRIPT deploy_script
+        )
+    endif()
+    install(SCRIPT ${deploy_script})
+
+    include(InstallRequiredSystemLibraries)
+
+    set(APPX_PUBLISHER_ID "Qt.Experiment.Certificate")
+    set(APPX_PACKAGE_PRODUCT_NAME "QtExperiment.${APP_TARGET}")
+    set(APPX_PACKAGE_PRODUCT_DISPLAY_NAME "${APP_NAME}")
+    set(APPX_PACKAGE_PRODUCT_DESCRIPTION "Test app for building QML projects for Windows in CMake")
+    set(APPX_PACKAGE_PRODUCT_VERSION "${PROJECT_VERSION}.0")
+    set(APPX_PACKAGE_PRODUCT_BACKGROUND_COLOR "transparent")
+    set(APPX_PACKAGE_PUBLISHER_ID "CN=${APPX_PUBLISHER_ID}")
+    set(APPX_PACKAGE_PUBLISHER_DISPLAY_NAME "Publisher")
+    set(APPX_PACKAGE_MIN_VERSION "10.0.19041.0")
+    set(APPX_PACKAGE_MAX_VERSION_TESTED "10.0.19041.0")
+    set(APPX_PACKAGE_EXECUTABLE "${CMAKE_INSTALL_BINDIR}/${APP_TARGET}.exe")
+    set(APPX_PACKAGES_PREFIX "packages")
+    set(APPX_PACKAGE_NAME_X64 "${APP_TARGET}_x64.appx")
+    set(APPX_BUNDLE_NAME "${APP_TARGET}.appxbundle")
+
+    configure_file(AppxManifest.xml.in "${CMAKE_CURRENT_BINARY_DIR}/AppxManifest.xml")
+    install(
+        FILES "${CMAKE_CURRENT_BINARY_DIR}/AppxManifest.xml"
+        DESTINATION "${CMAKE_INSTALL_PREFIX}"
     )
-else()
-    qt_generate_deploy_qml_app_script(
-        TARGET ${APP_TARGET}
-        OUTPUT_SCRIPT deploy_script
+    install(
+        DIRECTORY Assets
+        DESTINATION "${CMAKE_INSTALL_PREFIX}"
     )
+
+message(STATUS "Done prepare for install step.")
 endif()
-install(SCRIPT ${deploy_script})
-
-include(InstallRequiredSystemLibraries)
-
-set(APPX_PUBLISHER_ID "Qt.Experiment.Certificate")
-set(APPX_PACKAGE_PRODUCT_NAME "QtExperiment.${APP_TARGET}")
-set(APPX_PACKAGE_PRODUCT_DISPLAY_NAME "${APP_NAME}")
-set(APPX_PACKAGE_PRODUCT_DESCRIPTION "Test app for building QML projects for Windows in CMake")
-set(APPX_PACKAGE_PRODUCT_VERSION "${PROJECT_VERSION}.0")
-set(APPX_PACKAGE_PRODUCT_BACKGROUND_COLOR "transparent")
-set(APPX_PACKAGE_PUBLISHER_ID "CN=${APPX_PUBLISHER_ID}")
-set(APPX_PACKAGE_PUBLISHER_DISPLAY_NAME "Publisher")
-set(APPX_PACKAGE_MIN_VERSION "10.0.19041.0")
-set(APPX_PACKAGE_MAX_VERSION_TESTED "10.0.19041.0")
-set(APPX_PACKAGE_EXECUTABLE "${CMAKE_INSTALL_BINDIR}/${APP_TARGET}.exe")
-set(APPX_PACKAGES_PREFIX "packages")
-set(APPX_PACKAGE_NAME_X64 "${APP_TARGET}_x64.appx")
-set(APPX_BUNDLE_NAME "${APP_TARGET}.appxbundle")
-
-configure_file(AppxManifest.xml.in "${CMAKE_CURRENT_BINARY_DIR}/AppxManifest.xml")
-install(
-    FILES "${CMAKE_CURRENT_BINARY_DIR}/AppxManifest.xml"
-    DESTINATION "${CMAKE_INSTALL_PREFIX}"
-)
-install(
-    DIRECTORY Assets
-    DESTINATION "${CMAKE_INSTALL_PREFIX}"
-)
 
 option(APP_PACKAGE_SIGN "Enable packaging and signing of the app" OFF)
 option(APP_BUNDLE "Enable bundling .appx package as .appxbundle (bundle gets signed instead of package)" OFF)
