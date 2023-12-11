@@ -32,7 +32,7 @@
     <Application
        Id="App"
        Executable="@APPX_PACKAGE_EXECUTABLE@"
-       EntryPoint="Windows.Application">
+       EntryPoint="Windows.FullTrustApplication">
 
       <uap:VisualElements
           DisplayName="@APPX_PACKAGE_PRODUCT_DISPLAY_NAME@"
@@ -52,5 +52,9 @@
 
     </Application>
   </Applications>
+
+<Capabilities>
+  <rescap:Capability Name="runFullTrust" />
+</Capabilities>
 
 </Package>
