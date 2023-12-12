@@ -51,9 +51,12 @@ set_target_properties(${APP_TARGET} PROPERTIES
     WIN32_EXECUTABLE TRUE
 )
 
+target_compile_definitions(${APP_TARGET} PRIVATE WINVER=0x0A00 _WIN32_WINNT=0x0A00)
+
 target_link_libraries(${APP_TARGET}
     PRIVATE
     Qt6::Quick
+    WindowsApp
 )
 
 option(APP_INSTALL "Run install step following the build" OFF)
